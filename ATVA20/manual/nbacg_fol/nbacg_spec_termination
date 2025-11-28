@@ -1,0 +1,1 @@
+And(F(G(And(locNO == 0, locFDNO == 0, locYES == 0, locFDYES == 0, Or(nsntNoCF < 1, locSE == 0), Or(nsntYesCF < N, nsntNoCF >= 1, locSE == 0)))), And(locFDNO == 0, locFDYES == 0), G(locCR == 0)) -> F(And(locNO == 0, locFDNO == 0, locYES == 0, locFDYES == 0, locCR == 0))

@@ -1,0 +1,900 @@
+import time
+import re
+import resource
+import os
+import sys
+
+
+from aut_preprocessor import *
+from formula_preprocessor import *
+
+soft, hard = resource.getrlimit(resource.RLIMIT_AS) 
+resource.setrlimit(resource.RLIMIT_AS, (7000000000,hard))
+
+
+specs = {}
+
+specs['frb'] = ['_corr', '_fkl', '_relay', '_unforg']
+specs['strb'] = ['_corr', '_relay', '_unforg']
+specs['nbacg'] = ['_abort_unreachable', '_abort_validity', '_agreement', '_commit_unreachable',  '_commit_validity', '_send_unreachable', '_termination']
+specs['nbacr'] = ['_abort_unreachable', '_commit_unreachable', '_nontriv', '_send_unreachable', '_termination1', '_termination2', '_validity']
+specs['aba'] = ['_agreement', '_agreement_all0', '_agreement_all1', '_completeness', '_corr', '_unforg']
+specs['cbc'] = ['_agreement', '_termination', '_unreach_ac0', '_unreach_ac1', '_unreach_cr', '_unreach_p0', '_unreach_p1', '_validity0', '_validity1']
+specs['cf1s'] = ['_fast0', '_fast1', '_onestep0', '_onestep1']
+specs['c1cs'] = ['_onestep0', '_onestep1', '_onestep_almost0', '_onestep_almost1', '_fast0', '_fast1', '_termination']
+specs['bosco'] = ['_onestep0', '_onestep1', '_fast0', '_fast1', '_lemma3_0', '_lemma3_1', '_lemma4_0', '_lemma4_1']
+
+cases = {}
+
+cases['frb'] = ['BUG1','BUG2','NoBUGS']
+cases['strb'] = ['BUG1','BUG2','NoBUGS']
+cases['nbacg'] = ['NoBUGS']
+cases['nbacr'] = ['NoBUGS']
+cases['aba'] = ['CASE1', 'CASE2']
+cases['cbc'] = ['CASE2'] #['CASE1', 'CASE2', 'CASE3', 'CASE4'] #The other cases are commented out because they took too long even for one specification, the agreement specification
+cases['cf1s'] = ['CASE1', 'CASE2', 'CASE3']
+cases['c1cs'] = ['CASE1', 'CASE2', 'CASE3']
+cases['bosco'] = ['CASE1', 'CASE2', 'CASE3', 'CASE4']
+
+
+
+for infile in specs:
+    for case in cases[infile]:
+
+
+        base_folder = f"{infile}_fol/{infile}_{case}"
+        base_file = infile + '_' + case
+
+        for additional_file in specs[infile]:
+
+            print(base_file + additional_file)
+             
+            start = time.time()
+
+            ######################################################
+
+            #Read the threshold automaton
+
+            file_path = os.path.join(base_folder,base_file)
+            with open(file_path, "r") as f:
+                lines = f.readlines() #The threshold automaton
+
+                #Feed the automaton for preprocessing
+                shared, parameters, assumptions, locations, number_function, inits, rules, total_conditions, num_rules, num_conditions, cycles, SCCs = aut_master(lines)
+
+
+
+
+            ############################################################
+
+            #Read the specification
+            file_path = os.path.join(base_folder,base_file+'_spec'+additional_file)
+            with open(file_path, "r") as h:
+                line = h.readline() #The specification
+
+                #Feed the specification to the preprocessor
+                syntax_tree, all_orders = formula_master(line)
+
+            #############################################################
+
+
+            #Now I will create a file which when compiled creates a solver, adds all the constraints and solves it
+
+
+            g = open(os.path.join(base_folder,base_file+'_constraints'+additional_file+'.py'),"w")
+
+            g.write('from time import *\n')
+            g.write('start = time()\n')
+            g.write('import sys\n')
+
+            g.write('from z3 import *\n')
+            g.write('s = Solver()\n')
+
+
+
+            g.write('\n#Declaring parameter variables\n\n')
+
+            for parameter in parameters:
+                g.write('%s = Int(\'%s\')\n' % (parameter, parameter))
+
+            for parameter in parameters:
+                g.write('s.add(%s >= 0)\n' % parameter)
+
+
+            g.write('\n#Adding the resilience condition\n\n')
+
+            for assumption in assumptions:
+                g.write('s.add(%s)\n' % assumption)
+
+
+            def find_vertex_outgoing(k): #Finds outgoing vertex of kth rule
+                for rule in rules:
+                    if rule[4] == k:
+                        return rule[0][0]
+
+            def find_vertex_incoming(k):
+                for rule in rules:
+                    if rule[4] == k:
+                        return rule[0][1]
+
+
+
+
+
+
+
+
+            #Reachability relation for the initial part of the lasso
+            def reach_relation_init(index, Pprop, Gprop):	
+
+                begin = ((2*num_conditions+1) * index)
+                end = ((2*num_conditions+1) * (index+1))
+
+                if begin == 0:
+                    start = 0
+                else:
+                    start = begin+1
+
+
+                g.write('\n####################################################################################\n')
+
+                g.write('\n#Creating constraints for a run between the %dth and %dth configurations\n' %(index, index+1))
+
+                g.write('\n################Step 1#################\n\n')
+
+                g.write('\n#Creating many copies of location variables\n\n')
+
+                for location in locations:
+                    for i in range(start, end+1):
+                        g.write('%s_%d = Int(\'%s_%d\')\n' % (location, i, location, i))
+                    for i in range(start, end+1):
+                        g.write('s.add(%s_%d >= 0)\n' % (location,i))
+                    g.write('\n')
+
+
+                g.write('\n#Adding the constraint for the number of processes\n\n')
+
+                for i in range(start, end+1):
+                    st = locations[0] + '_' + str(i) 
+                    for location in locations[1:]:
+                        st = st + ' + ' + location + '_' + str(i)
+                    st = st + ' == ' + number_function
+                    g.write('s.add(%s)\n' % st)
+
+
+
+                g.write('\n#Creating many copies of shared variables\n\n')
+
+                for var in shared:
+                    for i in range(start, end+1):
+                        g.write('%s_%d = Int(\'%s_%d\')\n' % (var, i, var, i))
+                    for i in range(start, end+1):
+                        g.write('s.add(%s_%d >= 0)\n' % (var, i))
+                    g.write('\n')
+
+
+                g.write('\n#Ensuring that the alternating indices have the same context\n\n')
+
+                for i in range(begin, end, 2):
+                    for condition in total_conditions:
+                        st = condition.split()
+                        st1 = ''
+                        st2 = ''
+                        fl = 0
+                        for letter in st:
+                            if letter == 'True':
+                                fl = 1
+                                break
+                            if letter in shared:
+                                st1 = st1 + letter + '_' + str(i) + ' '
+                                st2 = st2 + letter + '_' + str(i+1) + ' '
+                            else:
+                                st1 = st1 + letter + ' '
+                                st2 = st2 + letter + ' '
+                        if(fl == 0):
+                            g.write('s.add((%s) == (%s))\n' % (st1, st2))
+
+
+                g.write('\n#Creating many copies of variables for rules\n\n')
+
+                for i in range(num_rules):
+                    for j in range(begin, end):
+                        g.write('x%d_%d = Int(\'x%d_%d\')\n' %(i,j,i,j))
+                    for j in range(begin, end):
+                        g.write('s.add(x%d_%d >= 0)\n' %(i,j))
+                    g.write('\n')
+
+
+                g.write('\n#Ensuring that at most one rule is fired between alternating configurations\n\n')
+
+                for j in range(begin+1, end, 2):
+                    st = 'x0_' + str(j)
+                    g.write('s.add(Or((x0_%d == 0), (x0_%d == 1)))\n' %(j,j))
+                    for i in range(1,num_rules):
+                        st = st + ' + ' + 'x' + str(i) + '_' + str(j)
+                        g.write('s.add(Or((x%d_%d == 0), (x%d_%d == 1)))\n' %(i,j,i,j))
+                    st = st + ' <= ' + '1'
+                    g.write('s.add(%s)\n\n' % st)
+
+
+
+                g.write('\n###################Step 2####################\n\n')
+
+                g.write('\n#Flow equations for the locations\n\n')
+
+
+                for i in range(begin, end):
+                    for location in locations:
+                        st = 's.add('
+                        for rule in rules:
+                            edge = rule[0]
+                            outgoing = edge[0]
+                            incoming = edge[1]
+                            rule_number = rule[4]
+                            if(outgoing == location):
+                                st = st + ' - ' + 'x' + str(rule_number) + '_' + str(i)
+                            if(incoming == location):
+                                st = st + ' + ' + 'x' + str(rule_number) + '_' + str(i)
+                        st = st + ' ==  ' + location + '_' + str(i+1) + ' - ' + location + '_' + str(i) + ')\n'
+                        g.write(st)
+
+
+                g.write('\n##################Step 3########################\n\n')
+
+                g.write('\n#Flow equations for the shared variables\n\n')
+
+
+                for i in range(begin, end):
+                    for var in shared:
+                        st = 's.add(0'
+                        for rule in rules:
+                            updates = rule[3]
+                            rule_number = rule[4]
+                            for update in updates:
+                                if '+' in update:
+                                    split = update.split('+')
+                                    name = split[0]
+                                    value = split[1]
+                                    if name == var:
+                                        st = st + ' + ' + 'x' + str(rule_number) + '_' + str(i) + ' * ' + str(value) 
+                        st = st + ' == ' + var + '_' + str(i+1) + ' - ' + var + '_' + str(i) + ')\n'	
+                        g.write(st)
+
+
+
+
+                g.write('\n####################Step 4########################\n\n')
+
+                g.write('\n#Rule is fired implies rule is enabled\n\n')
+
+                for rule in rules:
+                    rule_number = rule[4]
+                    rule_condition = rule[1]
+                    rule_outgoing = rule[0][0]
+                    for i in range(begin, end):
+                        st = rule_condition.split()
+                        st0 = ''
+                        for letter in st:
+                            modi_letter = sub('\(|\)|Or|And','',letter)
+                            if modi_letter in shared:
+                                letter = sub(modi_letter, modi_letter + '_' + str(i),letter)
+                            st0 = st0 + letter + ' '
+
+                        g.write('s.add(Implies( (x%d_%d > 0), (%s) ))\n' %(rule_number,i,st0))
+
+
+                g.write('\n######################Step 5#####################\n\n')
+
+                g.write('\n#Constraints that the %dth configuration has to satisfy\n\n' % index)
+
+                for loc in locations:
+                    Pprop = sub(loc, loc + '_' + str(begin), Pprop) #Assuming that the locations are prefix independent
+
+                st = Pprop.split()
+                st0 = ''
+                for letter in st:
+                    modi_letter = sub('\(|\)|Or|And','',letter)
+                    if modi_letter in shared:
+                        letter = sub(modi_letter, modi_letter + '_' + str(begin),letter)
+                    st0 = st0 + letter + ' '
+                g.write('s.add(%s)\n' %st0)
+
+                if index == 0:
+                    g.write('\n#######################Step 5 1/2################\n\n')
+
+                    g.write('\n#Ensure that the constraints on the initial configuration are satisfied\n\n')
+
+                    for init in inits:
+                        first = init.split(' == ')[0]
+
+                        if first in shared:
+                            modi_init = sub(first, first + '_0', init)
+                        else:
+                            modi_init = init
+                            for loc in locations: #Assuming that the locations are prefix independent
+                                modi_init = sub(loc, loc + '_0', modi_init)
+                        g.write('s.add(%s)\n' %modi_init)	
+
+
+
+                g.write('\n#####################Step 6########################\n\n')
+
+                g.write('\n#Constraints that the path between the %dth and %dth configuration has to satisfy\n\n' %(index, index+1))
+                for gprop in Gprop:
+                    for i in range(begin,end+1):
+                        st = gprop
+                        for loc in locations:
+                            st = sub(loc, loc + '_' + str(i), st) #Assuming that the locations are prefix independent
+                            #We also need to ensure that if we have some constraint of the form loc2 == 0 then none of the edges leading to loc2 are fired during the run
+            
+                            if i != end:	
+                                curr_pos = 0
+                                while(curr_pos != -1):
+                                    desired_string = loc + '_' + str(i) + ' == 0'
+                                    if st[curr_pos:].find(desired_string) == -1:
+                                        curr_pos = -1
+                                        continue
+                                    curr_pos = curr_pos + st[curr_pos:].find(desired_string)
+                
+                                    next_pos = curr_pos + len(desired_string)
+                                    inserted_string = ''
+                                    for rule in rules:
+                                        if rule[0][1] == loc:
+                                            inserted_string = inserted_string + 'x' + str(rule[4]) + '_' + str(i) + ' == 0, '
+                                    st = st[:curr_pos] + 'And(' + desired_string + ', ' + inserted_string + ')' +  st[next_pos:]
+                                    curr_pos = next_pos
+            
+                        st = st.split()
+                        st0 = ''
+                        for letter in st:
+                            modi_letter = sub('\(|\)|Or|And','',letter)
+                            if modi_letter in shared:
+                                letter = sub(modi_letter, modi_letter + '_' + str(i),letter)
+                            st0 = st0 + letter + ' '
+
+                        g.write('s.add(%s)\n' %st0)
+
+                g.write('\n#####################Step 7#########################\n\n')
+
+                g.write('\n#In the inital part, we do not allow all the edges in a cycle to be fired as this is clearly wasteful, assuming the automaton is canonical\n\n')
+
+                for cycle in cycles:
+                    #Non-trivial cycles
+                    modi_cycle = [edge for edge in cycle if find_vertex_outgoing(edge) != find_vertex_incoming(edge)]
+
+                    if modi_cycle == []:
+                            continue
+                    for i in range(begin,end):	
+                        st = 's.add(Or('
+                        for edge in cycle:
+                            st = st + 'x%d_%d == 0, ' % (edge,i)
+                        st = st[:-2] + '))'
+                        g.write('%s\n' %st)
+
+                g.write('\n#Further, if an edge is a self-loop, we do not fire that as well\n\n')
+
+                for rule in rules:
+                    for i in range(begin,end):
+                        edge = rule[0]
+                        if edge[0] == edge[1]:
+                            st = 's.add(x%d_%d == 0)' %(rule[4], i)
+                            g.write('%s\n' %st)		
+
+
+
+
+
+
+
+
+
+
+            #Reachability relation for the cycle part of the lasso
+            def reach_relation_lasso(index, Pprop, Gprop):	
+
+                begin = ((2*num_conditions+1) * index)
+                end = ((2*num_conditions+1) * (index+1))
+
+                if begin == 0:
+                    start = 0
+                else:
+                    start = begin+1
+
+
+                g.write('\n####################################################################################\n')
+
+                g.write('\n#Creating constraints for a run between the %dth and %dth configurations\n' %(index, index+1))
+
+                g.write('\n################Step 1#################\n\n')
+
+                g.write('\n#Creating many copies of location variables\n\n')
+
+                for location in locations:
+                    for i in range(start, end+1):
+                        g.write('%s_%d = Int(\'%s_%d\')\n' % (location, i, location, i))
+                    for i in range(start, end+1):
+                        g.write('s.add(%s_%d >= 0)\n' % (location,i))
+                    g.write('\n')
+
+
+                g.write('\n#Adding the constraint for the number of processes\n\n')
+
+                for i in range(start, end+1):
+                    st = locations[0] + '_' + str(i) 
+                    for location in locations[1:]:
+                        st = st + ' + ' + location + '_' + str(i)
+                    st = st + ' == ' + number_function
+                    g.write('s.add(%s)\n' % st)
+
+
+
+                g.write('\n#Creating many copies of shared variables\n\n')
+
+                for var in shared:
+                    for i in range(start, end+1):
+                        g.write('%s_%d = Int(\'%s_%d\')\n' % (var, i, var, i))
+                    for i in range(start, end+1):
+                        g.write('s.add(%s_%d >= 0)\n' % (var, i))
+                    g.write('\n')
+
+
+                g.write('\n#Ensuring that the alternating indices have the same context\n\n')
+
+                for i in range(begin, end, 2):
+                    for condition in total_conditions:
+                        st = condition.split()
+                        st1 = ''
+                        st2 = ''
+                        fl = 0
+                        for letter in st:
+                            if letter == 'True':
+                                fl = 1
+                                break
+                            if letter in shared:
+                                st1 = st1 + letter + '_' + str(i) + ' '
+                                st2 = st2 + letter + '_' + str(i+1) + ' '
+                            else:
+                                st1 = st1 + letter + ' '
+                                st2 = st2 + letter + ' '
+                        if(fl == 0):
+                            g.write('s.add((%s) == (%s))\n' % (st1, st2))
+
+
+                g.write('\n#Creating many copies of variables for rules\n\n')
+
+                for i in range(num_rules):
+                    for j in range(begin, end):
+                        g.write('x%d_%d = Int(\'x%d_%d\')\n' %(i,j,i,j))
+                    for j in range(begin, end):
+                        g.write('s.add(x%d_%d >= 0)\n' %(i,j))
+                    g.write('\n')
+
+
+                g.write('\n#Ensuring that at most one rule is fired between alternating configurations\n\n')
+
+                for j in range(begin+1, end, 2):
+                    st = 'x0_' + str(j)
+                    g.write('s.add(Or((x0_%d == 0), (x0_%d == 1)))\n' %(j,j))
+                    for i in range(1,num_rules):
+                        st = st + ' + ' + 'x' + str(i) + '_' + str(j)
+                        g.write('s.add(Or((x%d_%d == 0), (x%d_%d == 1)))\n' %(i,j,i,j))
+                    st = st + ' <= ' + '1'
+                    g.write('s.add(%s)\n\n' % st)
+
+
+
+                g.write('\n###################Step 2####################\n\n')
+
+                g.write('\n#Flow equations for the locations\n\n')
+
+
+                for i in range(begin, end):
+                    for location in locations:
+                        st = 's.add('
+                        for rule in rules:
+                            edge = rule[0]
+                            outgoing = edge[0]
+                            incoming = edge[1]
+                            rule_number = rule[4]
+                            if(outgoing == location):
+                                st = st + ' - ' + 'x' + str(rule_number) + '_' + str(i)
+                            if(incoming == location):
+                                st = st + ' + ' + 'x' + str(rule_number) + '_' + str(i)
+                        st = st + ' ==  ' + location + '_' + str(i+1) + ' - ' + location + '_' + str(i) + ')\n'
+                        g.write(st)
+
+
+                g.write('\n##################Step 3########################\n\n')
+
+                g.write('\n#Flow equations for the shared variables\n\n')
+
+
+                for i in range(begin, end):
+                    for var in shared:
+                        st = 's.add(0'
+                        for rule in rules:
+                            updates = rule[3]
+                            rule_number = rule[4]
+                            for update in updates:
+                                if '+' in update:
+                                    split = update.split('+')
+                                    name = split[0]
+                                    value = split[1]
+                                    if name == var:
+                                        st = st + ' + ' + 'x' + str(rule_number) + '_' + str(i) + ' * ' + str(value) 
+                        st = st + ' == ' + var + '_' + str(i+1) + ' - ' + var + '_' + str(i) + ')\n'	
+                        g.write(st)
+
+
+
+
+                g.write('\n####################Step 4########################\n\n')
+
+                g.write('\n#Rule is fired implies rule is enabled\n\n')
+
+                for rule in rules:
+                    rule_number = rule[4]
+                    rule_condition = rule[1]
+                    rule_outgoing = rule[0][0]
+                    for i in range(begin, end):
+                        st = rule_condition.split()
+                        st0 = ''
+                        for letter in st:
+                            modi_letter = sub('\(|\)|Or|And','',letter)
+                            if modi_letter in shared:
+                                letter = sub(modi_letter, modi_letter + '_' + str(i),letter)
+                            st0 = st0 + letter + ' '
+
+                        g.write('s.add(Implies( (x%d_%d > 0), (%s) ))\n' %(rule_number,i,st0))
+
+
+                g.write('\n######################Step 5#####################\n\n')
+
+                g.write('\n#Constraints that the %dth configuration has to satisfy\n\n' % index)
+
+                for loc in locations:
+                    Pprop = sub(loc, loc + '_' + str(begin), Pprop) #Assuming that the locations are prefix independent
+
+                st = Pprop.split()
+                st0 = ''
+                for letter in st:
+                    modi_letter = sub('\(|\)|Or|And','',letter)
+                    if modi_letter in shared:
+                        letter = sub(modi_letter, modi_letter + '_' + str(begin),letter)
+                    st0 = st0 + letter + ' '
+
+                g.write('s.add(%s)\n' %st0)
+
+                if index == 0:
+                    g.write('\n#######################Step 5 1/2################\n\n')
+
+                    g.write('\n#Ensure that the constraints on the initial configuration are satisfied\n\n')
+
+                    for init in inits:
+                        first = init.split(' == ')[0]
+
+                        if first in shared:
+                            modi_init = sub(first, first + '_0', init)
+                        else:
+                            modi_init = init
+                            for loc in locations: #Assuming that the locations are prefix independent
+                                modi_init = sub(loc, loc + '_0', modi_init)
+                        g.write('s.add(%s)\n' %modi_init)	
+
+
+
+                g.write('\n#####################Step 6########################\n\n')
+
+                g.write('\n#Constraints that the path between the %dth and %dth configuration has to satisfy\n\n' %(index, index+1))
+                for gprop in Gprop:
+                    for i in range(begin,end+1):
+                        st = gprop
+                        for loc in locations:
+                            st = sub(loc, loc + '_' + str(i), st) #Assuming that the locations are prefix independent
+
+                            #We also need to ensure that if we have some constraint of the form loc2 == 0 then none of the edges leading to loc2 are fired during the run
+
+                            if i != end:	
+                                curr_pos = 0
+                                while(curr_pos != -1):
+                                    desired_string = loc + '_' + str(i) + ' == 0'
+                                    if st[curr_pos:].find(desired_string) == -1:
+                                        curr_pos = -1
+                                        continue
+
+                                    curr_pos = curr_pos + st[curr_pos:].find(desired_string)
+
+                                    next_pos = curr_pos + len(desired_string)
+                                    inserted_string = ''
+                                    for rule in rules:
+                                        if rule[0][1] == loc:
+                                            inserted_string = inserted_string + 'x' + str(rule[4]) + '_' + str(i) + ' == 0, '
+                                    st = st[:curr_pos] + 'And(' + desired_string + ', ' + inserted_string + ')' +  st[next_pos:]
+                                    curr_pos = next_pos
+
+
+                        st = st.split()
+                        st0 = ''
+                        for letter in st:
+                            modi_letter = sub('\(|\)|Or|And','',letter)
+                            if modi_letter in shared:
+                                letter = sub(modi_letter, modi_letter + '_' + str(i),letter)
+                            st0 = st0 + letter + ' '
+
+                        g.write('s.add(%s)\n' %st0)
+
+                g.write('\n#####################Step 7#########################\n\n')
+
+                g.write('\n#In the cycle part, we only allow the edges in a cycle to be fired\n\n')
+
+                for rule in rules:
+                    edge = rule[0]
+                    rule_no = rule[4]
+
+                    fl = 0
+                    for cycle in cycles:
+                        if rule_no in cycle:
+                            fl = 1
+
+                    if fl == 0:
+                        for i in range(begin,end):
+                            st = 's.add(x%d_%d == 0)' % (rule_no,i)
+                            g.write('%s\n' %st)
+                        g.write('\n')
+
+
+
+                g.write('\n#Further if an edge in the cycle is fired, then there should be a process somewhere in that cycle\n\n')
+
+
+                for i in range(begin,end):
+                    for cycle in cycles:	
+                        #Remove the self-loops 
+
+                        modi_cycle = [edge for edge in cycle if find_vertex_outgoing(edge) != find_vertex_incoming(edge)]
+                        self_loops = [edge for edge in cycle if edge not in modi_cycle]
+
+
+                        if modi_cycle == []: #only self-loops. Hence only one vertex
+                            for loop in self_loops:
+                                loc = find_vertex_outgoing(loop)
+
+                                main_st = 's.add(Implies( (x%d_%d > 0), (%s_%d > 0)))' %(loop,i,loc,i)
+                                g.write('%s\n' % main_st)
+
+
+                        elif modi_cycle != []:
+                            rotate_cycle = [modi_cycle[0]]
+
+                            while(len(rotate_cycle) < len(modi_cycle)):
+                                for edge in modi_cycle:
+                                    current_edge = rotate_cycle[-1]
+                                    current_end_loc = find_vertex_incoming(current_edge)
+
+                                    if find_vertex_outgoing(edge) == current_end_loc:
+                                        rotate_cycle.append(edge)
+
+
+                            for j in range(len(rotate_cycle)):
+                                edge = rotate_cycle[j]
+                                main_st = 's.add(Implies( (x%d_%d > 0), Or(' % (edge, i)
+            
+                                for k in range(j+1):
+                                    arc = rotate_cycle[k]
+                                    st = 'And('
+                                    outgoing = find_vertex_outgoing(arc)
+                                    st = st + outgoing + '_' + str(i) + ' > 0, '
+                                    for next_arc in rotate_cycle[k:j]:
+                                        st = st + 'x%d_%d > 0, ' %(next_arc,i)
+                                    st = st[:-2] + '), '
+                                    main_st = main_st + st
+
+                                for k in range(j+1,len(rotate_cycle)):
+                                    arc = rotate_cycle[k]
+                                    st = 'And('
+                                    outgoing = find_vertex_outgoing(arc)
+                                    st = st + outgoing + '_' + str(i) + ' > 0, '
+                                    for next_arc in rotate_cycle[k:]:
+                                        st = st + 'x%d_%d > 0, ' %(next_arc,i)
+                                    for next_arc in rotate_cycle[:j]:
+                                        st = st + 'x%d_%d > 0, ' %(next_arc,i)
+                                    st = st[:-2] + '), '
+                                    main_st = main_st + st
+                                main_st = main_st + ')))'
+            
+                                g.write('%s\n' % main_st)
+
+
+                            for qw in range(len(self_loops)):
+                                loop = self_loops[qw]
+                                for j in range(len(rotate_cycle)):
+                                    edge = rotate_cycle[j]
+                                    if find_vertex_outgoing(loop) != find_vertex_outgoing(edge):
+                                        continue
+
+                                    main_st = 's.add(Implies( (x%d_%d > 0), Or(' % (loop, i)
+            
+                                    for k in range(j+1):
+                                        arc = rotate_cycle[k]
+                                        st = 'And('
+                                        outgoing = find_vertex_outgoing(arc)
+                                        st = st + outgoing + '_' + str(i) + ' > 0, '
+                                        for next_arc in rotate_cycle[k:j]:
+                                            st = st + 'x%d_%d > 0, ' %(next_arc,i)
+                                        st = st[:-2] + '), '
+                                        main_st = main_st + st
+
+                                    for k in range(j+1,len(rotate_cycle)):
+                                        arc = rotate_cycle[k]
+                                        st = 'And('
+                                        outgoing = find_vertex_outgoing(arc)
+                                        st = st + outgoing + '_' + str(i) + ' > 0, '
+                                        for next_arc in rotate_cycle[k:]:
+                                            st = st + 'x%d_%d > 0, ' %(next_arc,i)
+                                        for next_arc in rotate_cycle[:j]:
+                                            st = st + 'x%d_%d > 0, ' %(next_arc,i)
+                                        st = st[:-2] + '), '
+                                        main_st = main_st + st
+                                    main_st = main_st + ')))'
+            
+                                    g.write('%s\n' % main_st)
+
+
+
+
+
+
+
+
+
+
+
+            #Function to close the loop and to ensure that at least one rule is fired between the start of the loop and the end of the loop
+
+            def close_loop(loop_st, loop_end):
+                begin = (2*num_conditions+1) * loop_st
+                end = (2*num_conditions+1) * loop_end
+
+                #Ensure that loop_st and loop_end are the same
+
+                g.write('\n##################Closing the loop###############\n\n')
+
+                for location in locations:
+                    st = 's.add( %s_%d == %s_%d )' %(location,begin,location,end)
+                    g.write('%s\n' % st)
+
+                for var in shared:
+                    st = 's.add( %s_%d == %s_%d )' %(var,begin,var,end)
+                    g.write('%s\n' % st)
+
+                g.write('\n#################Ensuring that at least one rule has been fired\n\n')
+
+                rules_in_cycles = set([edge for cycle in cycles for edge in cycle])
+
+                st = 's.add(Or('
+                for i in range(begin,end):
+                    st = st + 'Or('
+                    for rule in rules:
+                        if rule[4] in rules_in_cycles:
+                            st = st + 'x%d_%d > 0, ' %(rule[4],i)
+                    st = st[:-2] + '), '
+                st = st[:-2] + '))'
+                g.write('%s\n' % st)
+
+
+
+
+
+
+            def close_path(index, Pprop):
+                config = (2*num_conditions+1)*index
+                #Have to ensure that config satisfies the conditions in Pprop
+
+                for loc in locations:
+                    Pprop = sub(loc, loc + '_' + str(config), Pprop) #Assuming that the locations are prefix independent
+            
+                g.write('\n##########Closing path###########\n\n')
+                st = Pprop.split()
+                st0 = ''
+                for letter in st:
+                    modi_letter = sub('\(|\)|Or|And','',letter)
+                    if modi_letter in shared:
+                        letter = sub(modi_letter, modi_letter + '_' + str(config),letter)
+                    st0 = st0 + letter + ' '
+                g.write('s.add(%s)\n' %st0)
+
+
+
+
+
+
+
+
+
+
+
+
+            for topo_ord in all_orders:
+                root = syntax_tree[0]
+                Pprop = [root[1]]
+                Gprop = [root[2]]
+                loop_st = -1
+                loop_end = -1
+
+                for i in range(len(topo_ord)):
+                    node = topo_ord[i]
+
+                    indicator = node[0]
+                    if indicator == 'F':
+                        Pprop.append(node[2][1])
+                        Gprop.append(node[2][2])
+
+                    elif indicator == 'loop_st':
+                        loop_st = i+1
+                        Pprop.append('True')
+                        Gprop.append('True')
+
+                    elif indicator == 'loop_end':
+                        loop_end = i+1
+                        Pprop.append('True')
+                        Gprop.append('True')
+
+                modalities = [node[0] for node in syntax_tree]
+                if 'G' not in modalities: #Safety property
+                    for i in range(len(Pprop)):
+                        if i < loop_st-1:
+                            reach_relation_init(i,Pprop[i],Gprop[0:i+1])
+                    #Finally add the required clause at the end
+                    close_path(loop_st-1,Pprop[loop_st-1])
+
+                else:
+                    for i in range(len(Pprop)):
+                        if i < loop_st:
+                            reach_relation_init(i,Pprop[i],Gprop[0:i+1])
+                        elif i >= loop_st and i < loop_end:
+                            reach_relation_lasso(i,Pprop[i],Gprop)
+                        else:
+                            close_loop(loop_st,loop_end)
+
+                
+                g.write('\nif s.check() == sat:\n')
+                g.write('\n	print("Specification not satisfied")\n')
+                #g.write('\n	mod = s.model()\n')
+                #g.write('\n	for x in mod:')
+                #g.write('\n		print(x,mod[x])\n')
+                g.write('\n	raise StopIteration("stop here")\n')
+
+
+                g.write('\ns.reset()\n')
+
+                g.write('\n#Declaring parameter variables\n\n')
+
+                for parameter in parameters:
+                    g.write('%s = Int(\'%s\')\n' % (parameter, parameter))
+
+                for parameter in parameters:
+                    g.write('s.add(%s >= 0)\n' % parameter)
+
+
+                g.write('\n#Adding the resilience condition\n\n')
+
+                for assumption in assumptions:
+                    g.write('s.add(%s)\n' % assumption)
+
+
+
+            g.write('\nprint("Specification satisfied")')
+            g.close()
+
+            sys.path.append(base_folder)
+            fi = base_file + '_constraints' + additional_file 
+            try:
+                x = __import__(fi)
+            except StopIteration:
+                pass
+
+
+
+
+        end = time.time()
+        print(end-start)

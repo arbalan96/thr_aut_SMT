@@ -1,0 +1,84 @@
+shared 
+nsntNoCF
+nsntYesCF
+
+parameters 
+N
+
+assumptions
+N > 1
+
+locations
+locNO: [0]
+locYES: [1]
+locNOFD: [2]
+locYESFD: [3]
+locSE: [4]
+locCMT: [5]
+locABR: [6]
+locCR: [7]
+
+number_function
+N
+
+inits
+locNO >= 0 
+locYES >= 0 
+locNOFD >= 0
+locYESFD >= 0
+locSE == 0
+locCMT == 0
+locABR == 0
+locCR == 0
+nsntNoCF == 0
+nsntYesCF == 0
+
+rules
+0: locNO -> locSE
+when true
+do nsntNoCF' == nsntNoCF + 1, nsntYesCF' == nsntYesCF
+1: locYES -> locSE
+when true
+do nsntYesCF' == nsntYesCF + 1, nsntNoCF' == nsntNoCF
+2: locNOFD -> locABR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+3: locYESFD -> locABR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+4: locSE -> locABR
+when nsntNoCF >= 1
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+5: locSE -> locCMT
+when nsntNoCF < 1, nsntYesCF >= N
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+6: locNO -> locCR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+7: locNOFD -> locCR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+8: locYES -> locCR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+9: locYESFD -> locCR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+10: locSE -> locCR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+11: locCMT -> locCR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+12: locABR -> locCR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+13: locSE -> locSE
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+14: locCMT -> locCMT
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF
+15: locABR -> locABR
+when true
+do nsntNoCF' == nsntNoCF, nsntYesCF' == nsntYesCF

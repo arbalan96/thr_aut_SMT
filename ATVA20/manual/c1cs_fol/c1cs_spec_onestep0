@@ -1,0 +1,1 @@
+loc1 == 0 -> G(And(locD1 == 0, locU0 == 0, locU1 == 0))

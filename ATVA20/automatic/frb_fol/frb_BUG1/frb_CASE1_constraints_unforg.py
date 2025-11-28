@@ -1,0 +1,590 @@
+from time import *
+start = time()
+import sys
+from z3 import *
+s = Solver()
+
+#Declaring parameter variables
+
+N = Int('N')
+s.add(N >= 0)
+
+#Adding the resilience condition
+
+s.add(N > 1)
+
+####################################################################################
+
+#Creating constraints for a run between the 0th and 1th configurations
+
+################Step 1#################
+
+
+#Creating many copies of location variables
+
+loc0_0_0 = Int('loc0_0_0')
+loc0_0_1 = Int('loc0_0_1')
+loc0_0_2 = Int('loc0_0_2')
+loc0_0_3 = Int('loc0_0_3')
+loc0_0_4 = Int('loc0_0_4')
+loc0_0_5 = Int('loc0_0_5')
+s.add(loc0_0_0 >= 0)
+s.add(loc0_0_1 >= 0)
+s.add(loc0_0_2 >= 0)
+s.add(loc0_0_3 >= 0)
+s.add(loc0_0_4 >= 0)
+s.add(loc0_0_5 >= 0)
+
+loc1_2_0 = Int('loc1_2_0')
+loc1_2_1 = Int('loc1_2_1')
+loc1_2_2 = Int('loc1_2_2')
+loc1_2_3 = Int('loc1_2_3')
+loc1_2_4 = Int('loc1_2_4')
+loc1_2_5 = Int('loc1_2_5')
+s.add(loc1_2_0 >= 0)
+s.add(loc1_2_1 >= 0)
+s.add(loc1_2_2 >= 0)
+s.add(loc1_2_3 >= 0)
+s.add(loc1_2_4 >= 0)
+s.add(loc1_2_5 >= 0)
+
+loc0_3_0 = Int('loc0_3_0')
+loc0_3_1 = Int('loc0_3_1')
+loc0_3_2 = Int('loc0_3_2')
+loc0_3_3 = Int('loc0_3_3')
+loc0_3_4 = Int('loc0_3_4')
+loc0_3_5 = Int('loc0_3_5')
+s.add(loc0_3_0 >= 0)
+s.add(loc0_3_1 >= 0)
+s.add(loc0_3_2 >= 0)
+s.add(loc0_3_3 >= 0)
+s.add(loc0_3_4 >= 0)
+s.add(loc0_3_5 >= 0)
+
+loc1_3_0 = Int('loc1_3_0')
+loc1_3_1 = Int('loc1_3_1')
+loc1_3_2 = Int('loc1_3_2')
+loc1_3_3 = Int('loc1_3_3')
+loc1_3_4 = Int('loc1_3_4')
+loc1_3_5 = Int('loc1_3_5')
+s.add(loc1_3_0 >= 0)
+s.add(loc1_3_1 >= 0)
+s.add(loc1_3_2 >= 0)
+s.add(loc1_3_3 >= 0)
+s.add(loc1_3_4 >= 0)
+s.add(loc1_3_5 >= 0)
+
+loc1_0_0 = Int('loc1_0_0')
+loc1_0_1 = Int('loc1_0_1')
+loc1_0_2 = Int('loc1_0_2')
+loc1_0_3 = Int('loc1_0_3')
+loc1_0_4 = Int('loc1_0_4')
+loc1_0_5 = Int('loc1_0_5')
+s.add(loc1_0_0 >= 0)
+s.add(loc1_0_1 >= 0)
+s.add(loc1_0_2 >= 0)
+s.add(loc1_0_3 >= 0)
+s.add(loc1_0_4 >= 0)
+s.add(loc1_0_5 >= 0)
+
+loc0_1_0 = Int('loc0_1_0')
+loc0_1_1 = Int('loc0_1_1')
+loc0_1_2 = Int('loc0_1_2')
+loc0_1_3 = Int('loc0_1_3')
+loc0_1_4 = Int('loc0_1_4')
+loc0_1_5 = Int('loc0_1_5')
+s.add(loc0_1_0 >= 0)
+s.add(loc0_1_1 >= 0)
+s.add(loc0_1_2 >= 0)
+s.add(loc0_1_3 >= 0)
+s.add(loc0_1_4 >= 0)
+s.add(loc0_1_5 >= 0)
+
+loc0_2_0 = Int('loc0_2_0')
+loc0_2_1 = Int('loc0_2_1')
+loc0_2_2 = Int('loc0_2_2')
+loc0_2_3 = Int('loc0_2_3')
+loc0_2_4 = Int('loc0_2_4')
+loc0_2_5 = Int('loc0_2_5')
+s.add(loc0_2_0 >= 0)
+s.add(loc0_2_1 >= 0)
+s.add(loc0_2_2 >= 0)
+s.add(loc0_2_3 >= 0)
+s.add(loc0_2_4 >= 0)
+s.add(loc0_2_5 >= 0)
+
+
+#Adding the constraint for the number of processes
+
+s.add(loc0_0_0 + loc1_2_0 + loc0_3_0 + loc1_3_0 + loc1_0_0 + loc0_1_0 + loc0_2_0 == N)
+s.add(loc0_0_1 + loc1_2_1 + loc0_3_1 + loc1_3_1 + loc1_0_1 + loc0_1_1 + loc0_2_1 == N)
+s.add(loc0_0_2 + loc1_2_2 + loc0_3_2 + loc1_3_2 + loc1_0_2 + loc0_1_2 + loc0_2_2 == N)
+s.add(loc0_0_3 + loc1_2_3 + loc0_3_3 + loc1_3_3 + loc1_0_3 + loc0_1_3 + loc0_2_3 == N)
+s.add(loc0_0_4 + loc1_2_4 + loc0_3_4 + loc1_3_4 + loc1_0_4 + loc0_1_4 + loc0_2_4 == N)
+s.add(loc0_0_5 + loc1_2_5 + loc0_3_5 + loc1_3_5 + loc1_0_5 + loc0_1_5 + loc0_2_5 == N)
+
+#Creating many copies of shared variables
+
+nsnt_0 = Int('nsnt_0')
+nsnt_1 = Int('nsnt_1')
+nsnt_2 = Int('nsnt_2')
+nsnt_3 = Int('nsnt_3')
+nsnt_4 = Int('nsnt_4')
+nsnt_5 = Int('nsnt_5')
+s.add(nsnt_0 >= 0)
+s.add(nsnt_1 >= 0)
+s.add(nsnt_2 >= 0)
+s.add(nsnt_3 >= 0)
+s.add(nsnt_4 >= 0)
+s.add(nsnt_5 >= 0)
+
+nsntF_0 = Int('nsntF_0')
+nsntF_1 = Int('nsntF_1')
+nsntF_2 = Int('nsntF_2')
+nsntF_3 = Int('nsntF_3')
+nsntF_4 = Int('nsntF_4')
+nsntF_5 = Int('nsntF_5')
+s.add(nsntF_0 >= 0)
+s.add(nsntF_1 >= 0)
+s.add(nsntF_2 >= 0)
+s.add(nsntF_3 >= 0)
+s.add(nsntF_4 >= 0)
+s.add(nsntF_5 >= 0)
+
+
+#Ensuring that the alternating indices have the same context
+
+s.add((nsnt_0 + nsntF_0 >= 1 ) == (nsnt_1 + nsntF_1 >= 1 ))
+s.add((nsnt_0 + nsntF_0 == 0 ) == (nsnt_1 + nsntF_1 == 0 ))
+s.add((nsnt_2 + nsntF_2 >= 1 ) == (nsnt_3 + nsntF_3 >= 1 ))
+s.add((nsnt_2 + nsntF_2 == 0 ) == (nsnt_3 + nsntF_3 == 0 ))
+s.add((nsnt_4 + nsntF_4 >= 1 ) == (nsnt_5 + nsntF_5 >= 1 ))
+s.add((nsnt_4 + nsntF_4 == 0 ) == (nsnt_5 + nsntF_5 == 0 ))
+
+#Creating many copies of variables for rules
+
+x0_0 = Int('x0_0')
+x0_1 = Int('x0_1')
+x0_2 = Int('x0_2')
+x0_3 = Int('x0_3')
+x0_4 = Int('x0_4')
+s.add(x0_0 >= 0)
+s.add(x0_1 >= 0)
+s.add(x0_2 >= 0)
+s.add(x0_3 >= 0)
+s.add(x0_4 >= 0)
+
+x1_0 = Int('x1_0')
+x1_1 = Int('x1_1')
+x1_2 = Int('x1_2')
+x1_3 = Int('x1_3')
+x1_4 = Int('x1_4')
+s.add(x1_0 >= 0)
+s.add(x1_1 >= 0)
+s.add(x1_2 >= 0)
+s.add(x1_3 >= 0)
+s.add(x1_4 >= 0)
+
+x2_0 = Int('x2_0')
+x2_1 = Int('x2_1')
+x2_2 = Int('x2_2')
+x2_3 = Int('x2_3')
+x2_4 = Int('x2_4')
+s.add(x2_0 >= 0)
+s.add(x2_1 >= 0)
+s.add(x2_2 >= 0)
+s.add(x2_3 >= 0)
+s.add(x2_4 >= 0)
+
+x3_0 = Int('x3_0')
+x3_1 = Int('x3_1')
+x3_2 = Int('x3_2')
+x3_3 = Int('x3_3')
+x3_4 = Int('x3_4')
+s.add(x3_0 >= 0)
+s.add(x3_1 >= 0)
+s.add(x3_2 >= 0)
+s.add(x3_3 >= 0)
+s.add(x3_4 >= 0)
+
+x4_0 = Int('x4_0')
+x4_1 = Int('x4_1')
+x4_2 = Int('x4_2')
+x4_3 = Int('x4_3')
+x4_4 = Int('x4_4')
+s.add(x4_0 >= 0)
+s.add(x4_1 >= 0)
+s.add(x4_2 >= 0)
+s.add(x4_3 >= 0)
+s.add(x4_4 >= 0)
+
+x5_0 = Int('x5_0')
+x5_1 = Int('x5_1')
+x5_2 = Int('x5_2')
+x5_3 = Int('x5_3')
+x5_4 = Int('x5_4')
+s.add(x5_0 >= 0)
+s.add(x5_1 >= 0)
+s.add(x5_2 >= 0)
+s.add(x5_3 >= 0)
+s.add(x5_4 >= 0)
+
+x6_0 = Int('x6_0')
+x6_1 = Int('x6_1')
+x6_2 = Int('x6_2')
+x6_3 = Int('x6_3')
+x6_4 = Int('x6_4')
+s.add(x6_0 >= 0)
+s.add(x6_1 >= 0)
+s.add(x6_2 >= 0)
+s.add(x6_3 >= 0)
+s.add(x6_4 >= 0)
+
+x7_0 = Int('x7_0')
+x7_1 = Int('x7_1')
+x7_2 = Int('x7_2')
+x7_3 = Int('x7_3')
+x7_4 = Int('x7_4')
+s.add(x7_0 >= 0)
+s.add(x7_1 >= 0)
+s.add(x7_2 >= 0)
+s.add(x7_3 >= 0)
+s.add(x7_4 >= 0)
+
+x8_0 = Int('x8_0')
+x8_1 = Int('x8_1')
+x8_2 = Int('x8_2')
+x8_3 = Int('x8_3')
+x8_4 = Int('x8_4')
+s.add(x8_0 >= 0)
+s.add(x8_1 >= 0)
+s.add(x8_2 >= 0)
+s.add(x8_3 >= 0)
+s.add(x8_4 >= 0)
+
+x9_0 = Int('x9_0')
+x9_1 = Int('x9_1')
+x9_2 = Int('x9_2')
+x9_3 = Int('x9_3')
+x9_4 = Int('x9_4')
+s.add(x9_0 >= 0)
+s.add(x9_1 >= 0)
+s.add(x9_2 >= 0)
+s.add(x9_3 >= 0)
+s.add(x9_4 >= 0)
+
+x10_0 = Int('x10_0')
+x10_1 = Int('x10_1')
+x10_2 = Int('x10_2')
+x10_3 = Int('x10_3')
+x10_4 = Int('x10_4')
+s.add(x10_0 >= 0)
+s.add(x10_1 >= 0)
+s.add(x10_2 >= 0)
+s.add(x10_3 >= 0)
+s.add(x10_4 >= 0)
+
+x11_0 = Int('x11_0')
+x11_1 = Int('x11_1')
+x11_2 = Int('x11_2')
+x11_3 = Int('x11_3')
+x11_4 = Int('x11_4')
+s.add(x11_0 >= 0)
+s.add(x11_1 >= 0)
+s.add(x11_2 >= 0)
+s.add(x11_3 >= 0)
+s.add(x11_4 >= 0)
+
+x12_0 = Int('x12_0')
+x12_1 = Int('x12_1')
+x12_2 = Int('x12_2')
+x12_3 = Int('x12_3')
+x12_4 = Int('x12_4')
+s.add(x12_0 >= 0)
+s.add(x12_1 >= 0)
+s.add(x12_2 >= 0)
+s.add(x12_3 >= 0)
+s.add(x12_4 >= 0)
+
+x13_0 = Int('x13_0')
+x13_1 = Int('x13_1')
+x13_2 = Int('x13_2')
+x13_3 = Int('x13_3')
+x13_4 = Int('x13_4')
+s.add(x13_0 >= 0)
+s.add(x13_1 >= 0)
+s.add(x13_2 >= 0)
+s.add(x13_3 >= 0)
+s.add(x13_4 >= 0)
+
+x14_0 = Int('x14_0')
+x14_1 = Int('x14_1')
+x14_2 = Int('x14_2')
+x14_3 = Int('x14_3')
+x14_4 = Int('x14_4')
+s.add(x14_0 >= 0)
+s.add(x14_1 >= 0)
+s.add(x14_2 >= 0)
+s.add(x14_3 >= 0)
+s.add(x14_4 >= 0)
+
+
+#Ensuring that at most one rule is fired between alternating configurations
+
+s.add(Or((x0_1 == 0), (x0_1 == 1)))
+s.add(Or((x1_1 == 0), (x1_1 == 1)))
+s.add(Or((x2_1 == 0), (x2_1 == 1)))
+s.add(Or((x3_1 == 0), (x3_1 == 1)))
+s.add(Or((x4_1 == 0), (x4_1 == 1)))
+s.add(Or((x5_1 == 0), (x5_1 == 1)))
+s.add(Or((x6_1 == 0), (x6_1 == 1)))
+s.add(Or((x7_1 == 0), (x7_1 == 1)))
+s.add(Or((x8_1 == 0), (x8_1 == 1)))
+s.add(Or((x9_1 == 0), (x9_1 == 1)))
+s.add(Or((x10_1 == 0), (x10_1 == 1)))
+s.add(Or((x11_1 == 0), (x11_1 == 1)))
+s.add(Or((x12_1 == 0), (x12_1 == 1)))
+s.add(Or((x13_1 == 0), (x13_1 == 1)))
+s.add(Or((x14_1 == 0), (x14_1 == 1)))
+s.add(x0_1 + x1_1 + x2_1 + x3_1 + x4_1 + x5_1 + x6_1 + x7_1 + x8_1 + x9_1 + x10_1 + x11_1 + x12_1 + x13_1 + x14_1 <= 1)
+
+s.add(Or((x0_3 == 0), (x0_3 == 1)))
+s.add(Or((x1_3 == 0), (x1_3 == 1)))
+s.add(Or((x2_3 == 0), (x2_3 == 1)))
+s.add(Or((x3_3 == 0), (x3_3 == 1)))
+s.add(Or((x4_3 == 0), (x4_3 == 1)))
+s.add(Or((x5_3 == 0), (x5_3 == 1)))
+s.add(Or((x6_3 == 0), (x6_3 == 1)))
+s.add(Or((x7_3 == 0), (x7_3 == 1)))
+s.add(Or((x8_3 == 0), (x8_3 == 1)))
+s.add(Or((x9_3 == 0), (x9_3 == 1)))
+s.add(Or((x10_3 == 0), (x10_3 == 1)))
+s.add(Or((x11_3 == 0), (x11_3 == 1)))
+s.add(Or((x12_3 == 0), (x12_3 == 1)))
+s.add(Or((x13_3 == 0), (x13_3 == 1)))
+s.add(Or((x14_3 == 0), (x14_3 == 1)))
+s.add(x0_3 + x1_3 + x2_3 + x3_3 + x4_3 + x5_3 + x6_3 + x7_3 + x8_3 + x9_3 + x10_3 + x11_3 + x12_3 + x13_3 + x14_3 <= 1)
+
+
+###################Step 2####################
+
+
+#Flow equations for the locations
+
+s.add( - x3_0 - x4_0 + x4_0 - x5_0 - x6_0 - x7_0 ==  loc0_0_1 - loc0_0_0)
+s.add( + x2_0 + x7_0 - x8_0 + x8_0 + x9_0 + x13_0 ==  loc1_2_1 - loc1_2_0)
+s.add( + x6_0 + x12_0 ==  loc0_3_1 - loc0_3_0)
+s.add( + x1_0 + x5_0 + x11_0 ==  loc1_3_1 - loc1_3_0)
+s.add( - x0_0 + x0_0 - x1_0 - x2_0 + x3_0 ==  loc1_0_1 - loc1_0_0)
+s.add( - x11_0 - x12_0 - x13_0 - x14_0 ==  loc0_1_1 - loc0_1_0)
+s.add( - x9_0 - x10_0 + x10_0 + x14_0 ==  loc0_2_1 - loc0_2_0)
+s.add( - x3_1 - x4_1 + x4_1 - x5_1 - x6_1 - x7_1 ==  loc0_0_2 - loc0_0_1)
+s.add( + x2_1 + x7_1 - x8_1 + x8_1 + x9_1 + x13_1 ==  loc1_2_2 - loc1_2_1)
+s.add( + x6_1 + x12_1 ==  loc0_3_2 - loc0_3_1)
+s.add( + x1_1 + x5_1 + x11_1 ==  loc1_3_2 - loc1_3_1)
+s.add( - x0_1 + x0_1 - x1_1 - x2_1 + x3_1 ==  loc1_0_2 - loc1_0_1)
+s.add( - x11_1 - x12_1 - x13_1 - x14_1 ==  loc0_1_2 - loc0_1_1)
+s.add( - x9_1 - x10_1 + x10_1 + x14_1 ==  loc0_2_2 - loc0_2_1)
+s.add( - x3_2 - x4_2 + x4_2 - x5_2 - x6_2 - x7_2 ==  loc0_0_3 - loc0_0_2)
+s.add( + x2_2 + x7_2 - x8_2 + x8_2 + x9_2 + x13_2 ==  loc1_2_3 - loc1_2_2)
+s.add( + x6_2 + x12_2 ==  loc0_3_3 - loc0_3_2)
+s.add( + x1_2 + x5_2 + x11_2 ==  loc1_3_3 - loc1_3_2)
+s.add( - x0_2 + x0_2 - x1_2 - x2_2 + x3_2 ==  loc1_0_3 - loc1_0_2)
+s.add( - x11_2 - x12_2 - x13_2 - x14_2 ==  loc0_1_3 - loc0_1_2)
+s.add( - x9_2 - x10_2 + x10_2 + x14_2 ==  loc0_2_3 - loc0_2_2)
+s.add( - x3_3 - x4_3 + x4_3 - x5_3 - x6_3 - x7_3 ==  loc0_0_4 - loc0_0_3)
+s.add( + x2_3 + x7_3 - x8_3 + x8_3 + x9_3 + x13_3 ==  loc1_2_4 - loc1_2_3)
+s.add( + x6_3 + x12_3 ==  loc0_3_4 - loc0_3_3)
+s.add( + x1_3 + x5_3 + x11_3 ==  loc1_3_4 - loc1_3_3)
+s.add( - x0_3 + x0_3 - x1_3 - x2_3 + x3_3 ==  loc1_0_4 - loc1_0_3)
+s.add( - x11_3 - x12_3 - x13_3 - x14_3 ==  loc0_1_4 - loc0_1_3)
+s.add( - x9_3 - x10_3 + x10_3 + x14_3 ==  loc0_2_4 - loc0_2_3)
+s.add( - x3_4 - x4_4 + x4_4 - x5_4 - x6_4 - x7_4 ==  loc0_0_5 - loc0_0_4)
+s.add( + x2_4 + x7_4 - x8_4 + x8_4 + x9_4 + x13_4 ==  loc1_2_5 - loc1_2_4)
+s.add( + x6_4 + x12_4 ==  loc0_3_5 - loc0_3_4)
+s.add( + x1_4 + x5_4 + x11_4 ==  loc1_3_5 - loc1_3_4)
+s.add( - x0_4 + x0_4 - x1_4 - x2_4 + x3_4 ==  loc1_0_5 - loc1_0_4)
+s.add( - x11_4 - x12_4 - x13_4 - x14_4 ==  loc0_1_5 - loc0_1_4)
+s.add( - x9_4 - x10_4 + x10_4 + x14_4 ==  loc0_2_5 - loc0_2_4)
+
+##################Step 3########################
+
+
+#Flow equations for the shared variables
+
+s.add(0 + x2_0 * 1 + x7_0 * 1 + x13_0 * 1 + x14_0 * 1 == nsnt_1 - nsnt_0)
+s.add(0 + x1_0 * 1 + x5_0 * 1 + x6_0 * 1 + x11_0 * 1 + x12_0 * 1 == nsntF_1 - nsntF_0)
+s.add(0 + x2_1 * 1 + x7_1 * 1 + x13_1 * 1 + x14_1 * 1 == nsnt_2 - nsnt_1)
+s.add(0 + x1_1 * 1 + x5_1 * 1 + x6_1 * 1 + x11_1 * 1 + x12_1 * 1 == nsntF_2 - nsntF_1)
+s.add(0 + x2_2 * 1 + x7_2 * 1 + x13_2 * 1 + x14_2 * 1 == nsnt_3 - nsnt_2)
+s.add(0 + x1_2 * 1 + x5_2 * 1 + x6_2 * 1 + x11_2 * 1 + x12_2 * 1 == nsntF_3 - nsntF_2)
+s.add(0 + x2_3 * 1 + x7_3 * 1 + x13_3 * 1 + x14_3 * 1 == nsnt_4 - nsnt_3)
+s.add(0 + x1_3 * 1 + x5_3 * 1 + x6_3 * 1 + x11_3 * 1 + x12_3 * 1 == nsntF_4 - nsntF_3)
+s.add(0 + x2_4 * 1 + x7_4 * 1 + x13_4 * 1 + x14_4 * 1 == nsnt_5 - nsnt_4)
+s.add(0 + x1_4 * 1 + x5_4 * 1 + x6_4 * 1 + x11_4 * 1 + x12_4 * 1 == nsntF_5 - nsntF_4)
+
+####################Step 4########################
+
+
+#Rule is fired implies rule is enabled
+
+s.add(Implies( (x0_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x0_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x0_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x0_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x0_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x1_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x1_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x1_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x1_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x1_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x2_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x2_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x2_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x2_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x2_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x3_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x3_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x3_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x3_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x3_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x4_0 > 0), ((Or((nsnt_0 + nsntF_0) >= 1 , (nsnt_0 + nsntF_0) == 0)) ) ))
+s.add(Implies( (x4_1 > 0), ((Or((nsnt_1 + nsntF_1) >= 1 , (nsnt_1 + nsntF_1) == 0)) ) ))
+s.add(Implies( (x4_2 > 0), ((Or((nsnt_2 + nsntF_2) >= 1 , (nsnt_2 + nsntF_2) == 0)) ) ))
+s.add(Implies( (x4_3 > 0), ((Or((nsnt_3 + nsntF_3) >= 1 , (nsnt_3 + nsntF_3) == 0)) ) ))
+s.add(Implies( (x4_4 > 0), ((Or((nsnt_4 + nsntF_4) >= 1 , (nsnt_4 + nsntF_4) == 0)) ) ))
+s.add(Implies( (x5_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x5_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x5_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x5_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x5_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x6_0 > 0), ((Or((nsnt_0 + nsntF_0) >= 1 , (nsnt_0 + nsntF_0) == 0)) ) ))
+s.add(Implies( (x6_1 > 0), ((Or((nsnt_1 + nsntF_1) >= 1 , (nsnt_1 + nsntF_1) == 0)) ) ))
+s.add(Implies( (x6_2 > 0), ((Or((nsnt_2 + nsntF_2) >= 1 , (nsnt_2 + nsntF_2) == 0)) ) ))
+s.add(Implies( (x6_3 > 0), ((Or((nsnt_3 + nsntF_3) >= 1 , (nsnt_3 + nsntF_3) == 0)) ) ))
+s.add(Implies( (x6_4 > 0), ((Or((nsnt_4 + nsntF_4) >= 1 , (nsnt_4 + nsntF_4) == 0)) ) ))
+s.add(Implies( (x7_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x7_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x7_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x7_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x7_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x8_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x8_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x8_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x8_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x8_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x9_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x9_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x9_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x9_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x9_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x10_0 > 0), ((Or((nsnt_0 + nsntF_0) >= 1 , (nsnt_0 + nsntF_0) == 0)) ) ))
+s.add(Implies( (x10_1 > 0), ((Or((nsnt_1 + nsntF_1) >= 1 , (nsnt_1 + nsntF_1) == 0)) ) ))
+s.add(Implies( (x10_2 > 0), ((Or((nsnt_2 + nsntF_2) >= 1 , (nsnt_2 + nsntF_2) == 0)) ) ))
+s.add(Implies( (x10_3 > 0), ((Or((nsnt_3 + nsntF_3) >= 1 , (nsnt_3 + nsntF_3) == 0)) ) ))
+s.add(Implies( (x10_4 > 0), ((Or((nsnt_4 + nsntF_4) >= 1 , (nsnt_4 + nsntF_4) == 0)) ) ))
+s.add(Implies( (x11_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x11_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x11_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x11_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x11_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x12_0 > 0), ((Or((nsnt_0 + nsntF_0) >= 1 , (nsnt_0 + nsntF_0) == 0)) ) ))
+s.add(Implies( (x12_1 > 0), ((Or((nsnt_1 + nsntF_1) >= 1 , (nsnt_1 + nsntF_1) == 0)) ) ))
+s.add(Implies( (x12_2 > 0), ((Or((nsnt_2 + nsntF_2) >= 1 , (nsnt_2 + nsntF_2) == 0)) ) ))
+s.add(Implies( (x12_3 > 0), ((Or((nsnt_3 + nsntF_3) >= 1 , (nsnt_3 + nsntF_3) == 0)) ) ))
+s.add(Implies( (x12_4 > 0), ((Or((nsnt_4 + nsntF_4) >= 1 , (nsnt_4 + nsntF_4) == 0)) ) ))
+s.add(Implies( (x13_0 > 0), (((nsnt_0 + nsntF_0) >= 1) ) ))
+s.add(Implies( (x13_1 > 0), (((nsnt_1 + nsntF_1) >= 1) ) ))
+s.add(Implies( (x13_2 > 0), (((nsnt_2 + nsntF_2) >= 1) ) ))
+s.add(Implies( (x13_3 > 0), (((nsnt_3 + nsntF_3) >= 1) ) ))
+s.add(Implies( (x13_4 > 0), (((nsnt_4 + nsntF_4) >= 1) ) ))
+s.add(Implies( (x14_0 > 0), ((Or((nsnt_0 + nsntF_0) >= 1 , (nsnt_0 + nsntF_0) == 0)) ) ))
+s.add(Implies( (x14_1 > 0), ((Or((nsnt_1 + nsntF_1) >= 1 , (nsnt_1 + nsntF_1) == 0)) ) ))
+s.add(Implies( (x14_2 > 0), ((Or((nsnt_2 + nsntF_2) >= 1 , (nsnt_2 + nsntF_2) == 0)) ) ))
+s.add(Implies( (x14_3 > 0), ((Or((nsnt_3 + nsntF_3) >= 1 , (nsnt_3 + nsntF_3) == 0)) ) ))
+s.add(Implies( (x14_4 > 0), ((Or((nsnt_4 + nsntF_4) >= 1 , (nsnt_4 + nsntF_4) == 0)) ) ))
+
+######################Step 5#####################
+
+
+#Constraints that the 0th configuration has to satisfy
+
+s.add(And(loc0_2_0 == 0, loc0_1_0 == 0, loc1_3_0 == 0, loc0_3_0 == 0, loc1_2_0 == 0) )
+
+#######################Step 5 1/2################
+
+
+#Ensure that the constraints on the initial configuration are satisfied
+
+s.add((loc0_1_0 + loc0_0_0) == N)
+s.add(loc0_2_0 == 0)
+s.add(loc1_2_0 == 0)
+s.add(loc0_3_0 == 0)
+s.add(loc1_3_0 == 0)
+s.add(loc1_0_0 == 0)
+s.add(nsnt_0 == 0)
+s.add(nsntF_0 == 0)
+
+#####################Step 6########################
+
+
+#Constraints that the path between the 0th and 1th configuration has to satisfy
+
+s.add(True )
+s.add(True )
+s.add(True )
+s.add(True )
+s.add(True )
+s.add(True )
+
+#####################Step 7#########################
+
+
+#In the inital part, we do not allow all the edges in a cycle to be fired as this is clearly wasteful, assuming the automaton is canonical
+
+
+#Further, if an edge is a self-loop, we do not fire that as well
+
+s.add(x0_0 == 0)
+s.add(x0_1 == 0)
+s.add(x0_2 == 0)
+s.add(x0_3 == 0)
+s.add(x0_4 == 0)
+s.add(x4_0 == 0)
+s.add(x4_1 == 0)
+s.add(x4_2 == 0)
+s.add(x4_3 == 0)
+s.add(x4_4 == 0)
+s.add(x8_0 == 0)
+s.add(x8_1 == 0)
+s.add(x8_2 == 0)
+s.add(x8_3 == 0)
+s.add(x8_4 == 0)
+s.add(x10_0 == 0)
+s.add(x10_1 == 0)
+s.add(x10_2 == 0)
+s.add(x10_3 == 0)
+s.add(x10_4 == 0)
+
+##########Closing path###########
+
+s.add(Or(loc0_2_5 != 0, loc1_2_5 != 0) )
+
+if s.check() == sat:
+
+	print("sat")
+
+	raise StopIteration("stop here")
+
+s.reset()
+
+#Declaring parameter variables
+
+N = Int('N')
+s.add(N >= 0)
+
+#Adding the resilience condition
+
+s.add(N > 1)
+
+print("unsat")

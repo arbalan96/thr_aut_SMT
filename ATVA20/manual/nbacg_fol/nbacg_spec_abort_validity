@@ -1,0 +1,1 @@
+Or(locNO != 0, locFDNO != 0) -> G(locCMT == 0)

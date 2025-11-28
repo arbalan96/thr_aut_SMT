@@ -1,0 +1,51 @@
+parameters, N, T, F
+
+assumptions, N > 3 * T, T >= F, T >= 1
+
+shared, nsntEC, nsntRD
+
+locations, loc0, loc1, locEC, locRD, locAC
+
+number_function, N - F
+
+inits, loc0 >= 0, loc1 >= 0, locEC == 0, locRD == 0, locAC == 0, nsntEC == 0, nsntRD == 0
+
+rules (10) {
+/* send a message when having value 1 */
+0: loc1 -> locEC
+when (true)
+do { nsntEC' == nsntEC + 1; nsntRD' == nsntRD; };
+/* phase 1: send ECHO */
+1: loc0 -> locEC
+when (2 * nsntEC >= N + T + 1 - 2 * F) /* nsntEC >= ceiling((N + T) / 2) */
+do { nsntEC' == nsntEC + 1; nsntRD' == nsntRD; };
+2: loc0 -> locEC
+when (nsntRD >= T + 1 - F)
+do { nsntEC' == nsntEC + 1; nsntRD' == nsntRD; };
+/* phase 2: send READY */
+3: locEC -> locRD
+when (2 * nsntEC >= N + T + 1 - 2 * F) /* nsntEC >= ceiling((N + T) / 2) */
+do { nsntEC' == nsntEC; nsntRD' == nsntRD + 1; };
+4: locEC -> locRD
+when (nsntRD >= T + 1 - F)
+do { nsntEC' == nsntEC; nsntRD' == nsntRD + 1; };
+/* accept */
+5: locRD -> locAC
+when (2 * nsntRD >= 2 * T + 1)
+do { unchanged(nsntEC, nsntRD); };
+/* self-loops */
+6: loc0 -> loc0
+when (2 * nsntEC < N + T + 1 && nsntRD < T + 1)
+do { unchanged(nsntEC, nsntRD); };
+7: locEC -> locEC
+when (2 * nsntEC < N + T + 1 && nsntRD < T + 1)
+do { unchanged(nsntEC, nsntRD); };
+8: locRD -> locRD
+when (nsntRD < 2 * T + 1)
+do { unchanged(nsntEC, nsntRD); };
+9: locAC -> locAC
+when (true)
+do { unchanged(nsntEC, nsntRD); };
+}
+
+

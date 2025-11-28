@@ -1,0 +1,1 @@
+F(G(And(Or(nsnt01CF < N - T, And(locS0 == 0, locS1 == 0)), loc0 == 0, loc1 == 0))) -> F(And(loc0 == 0, loc1 == 0, locS0 == 0, locS1 == 0))

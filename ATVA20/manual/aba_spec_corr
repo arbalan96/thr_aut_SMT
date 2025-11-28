@@ -1,0 +1,1 @@
+F(G(And(Or(2 * nsntEC < N + T + 1, loc0 == 0), Or(nsntRD < T + 1, loc0 == 0), Or(2 * nsntEC < N + T + 1, locEC == 0), Or(nsntRD < T + 1, locEC == 0), Or(nsntRD < 2 * T + 1, locRD == 0), loc1 == 0))) -> loc0 == 0 -> F(locAC != 0)

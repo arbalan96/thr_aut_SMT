@@ -1,0 +1,55 @@
+skel Proc {
+local pc;
+shared nsnt, nsntF, nfaulty;
+parameters N, T, F;
+assumptions (1) {
+N >= 1;
+N > T;
+T >= F;
+}
+
+locations (0) {
+loc0: [0]; 
+loc1: [1];
+locCR: [2];
+locAC: [3];
+}
+
+inits (0) {
+(loc0 + loc1) == N;
+locCR == 0;
+locAC == 0;
+nsnt == 0;
+nsntF == 0;
+}
+
+rules (0) {
+0: loc0 -> locCR
+when (nfaulty < F)
+do { unchanged(nsnt, nsntF); nfaulty' == nfaulty + 1; };
+1: loc1 -> locCR
+when (nfaulty < F)
+do { unchanged(nsnt, nsntF); nfaulty' == nfaulty + 1; };
+2: loc1 -> locCR
+when (nfaulty < F)
+do { nsnt' == nsnt; nsntF' == nsntF + 1; nfaulty' == nfaulty + 1; };
+3: locAC -> locCR
+when (nfaulty < F)
+do { unchanged(nsnt, nsntF); nfaulty' == nfaulty + 1; };
+4: loc1 -> locAC
+when (nsnt >= 0)
+do { nsnt' == nsnt + 1; unchanged(nsntF, nfaulty); };
+5: loc0 -> locAC
+when (nsnt >= 1)
+do { nsnt' == nsnt + 1; unchanged(nsntF, nfaulty); };
+6: loc0 -> loc0
+when (nsnt >= 0)
+do { unchanged(nsnt, nsntF, nfaulty); };
+7: loc1 -> loc1
+when (nsnt >= 0)
+do { unchanged(nsnt, nsntF, nfaulty); };
+8: locAC -> locAC
+when (nsnt >= 0)
+do { unchanged(nsnt, nsntF, nfaulty); };
+}
+

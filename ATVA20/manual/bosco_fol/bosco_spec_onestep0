@@ -1,0 +1,1 @@
+And(Or(And(F == 0, N > 5 * T), N > 7 * T), loc1 == 0) -> G(And(locD1 == 0, locU0 == 0, locU1 == 0))

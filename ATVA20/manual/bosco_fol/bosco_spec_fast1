@@ -1,0 +1,1 @@
+And(And(Or(And(F == 0, N > 5 * T), N > 7 * T), loc0 == 0), F(G(And(Or(nsnt01 < N - T, 2 * nsnt1 < N + 3 * T + 1, locS1 == 0), loc0 == 0, loc1 == 0)))) -> F(And(loc0 == 0, loc1 == 0, locS0 == 0, locS1 == 0, locD0 == 0, locU0 == 0, locU1 == 0))

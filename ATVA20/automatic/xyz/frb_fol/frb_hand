@@ -1,0 +1,60 @@
+shared 
+nsnt
+nsntF
+nfaulty
+
+parameters 
+N
+T
+F
+
+assumptions
+N >= 1
+N > T
+T >= F
+
+locations
+loc0: [0]
+loc1: [1]
+locCR: [2]
+locAC: [3]
+
+number_function
+N
+
+inits
+loc0 >= 0
+loc1 >= 0
+locCR == 0
+locAC == 0
+nsnt == 0
+nsntF == 0
+
+rules
+0: loc0 -> locCR
+when nfaulty < F
+do nsnt == nsnt, nsntF == nsntF, nfaulty' == nfaulty + 1
+1: loc1 -> locCR
+when nfaulty < F
+do nsnt == nsnt, nsntF == nsntF, nfaulty' == nfaulty + 1
+2: loc1 -> locCR
+when nfaulty < F
+do nsnt' == nsnt, nsntF' == nsntF + 1, nfaulty' == nfaulty + 1
+3: locAC -> locCR
+when nfaulty < F
+do nsnt == nsnt, nsntF == nsntF, nfaulty' == nfaulty + 1
+4: loc1 -> locAC
+when nsnt >= 0
+do nsnt' == nsnt + 1, nsntF == nsntF, nfaulty == nfaulty
+5: loc0 -> locAC
+when nsnt >= 1
+do nsnt' == nsnt + 1, nsntF == nsntF, nfaulty == nfaulty
+6: loc0 -> loc0
+when nsnt >= 0
+do nsnt == nsnt, nsntF == nsntF, nfaulty == nfaulty
+7: loc1 -> loc1 /* it is crucial to have this self-loop, although it is not obvious */
+when nsnt >= 0
+do nsnt == nsnt, nsntF == nsntF, nfaulty == nfaulty
+8: locAC -> locAC
+when nsnt >= 0
+do nsnt == nsnt, nsntF == nsntF, nfaulty == nfaulty
