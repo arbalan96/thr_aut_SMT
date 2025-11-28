@@ -2,7 +2,7 @@
 Code for the paper "Complexity of Verification and Synthesis of Threshold Automata"
 
 This is the Python code for the papers "Complexity of Verification and Synthesis of Threshold Automata" (ATVA20)
-and "Parameterized Complexity of Safety of Threshold Automata" (FST&TCS20)
+and "Parameterized Complexity of Safety of Threshold Automata" (FST&TCS20).
 For both of them to work, Z3 needs to be installed.
 
 ## ATVA 20 Benchmarks
