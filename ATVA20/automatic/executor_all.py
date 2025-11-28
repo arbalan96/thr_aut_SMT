@@ -44,12 +44,13 @@ for infile in specs:
 
         base_folder = f"{infile}_fol/{infile}_{case}"
         base_file = infile + '_' + case
-
+        
+        start = time.time()
+        
         for additional_file in specs[infile]:
 
             print(base_file + additional_file)
              
-            start = time.time()
 
             ######################################################
 

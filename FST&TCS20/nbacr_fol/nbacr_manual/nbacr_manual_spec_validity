@@ -1,0 +1,1 @@
+((locNO > 0 && locNO > 0) -> ([](locCMT == 0 && locCMT == 0)));

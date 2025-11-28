@@ -29,12 +29,12 @@ for base_file in specs:
 
 
     base_folder = f"{base_file}_fol"
+    start = time.time()    
 
     for additional_file in specs[base_file]:
 
         print(base_file + additional_file)
          
-        start = time.time()
 
         ######################################################
 

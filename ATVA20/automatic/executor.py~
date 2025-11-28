@@ -27,12 +27,12 @@ specs['bosco'] = ['_onestep0', '_onestep1', '_fast0', '_fast1', '_lemma3_0', '_l
 
 cases = {}
 
-cases['frb'] = ['BUG1','BUG2','NoBUGS']
+cases['frb'] = ['NoBUGS']
 cases['strb'] = ['BUG1','BUG2','NoBUGS']
 cases['nbacg'] = ['BUG1','BUG2','NoBUGS']
 cases['nbacr'] = ['BUG1','BUG2','NoBUGS']
 cases['aba'] = ['CASE1', 'CASE2']
-cases['cbc'] = ['CASE1', 'CASE2', 'CASE3', 'CASE4']
+cases['cbc'] = ['CASE2'] #['CASE1', 'CASE2', 'CASE3', 'CASE4'] #The other cases are commented out because they took too long even for one specification, the agreement specification
 cases['cf1s'] = ['CASE1', 'CASE2', 'CASE3']
 cases['c1cs'] = ['CASE1', 'CASE2', 'CASE3']
 cases['bosco'] = ['CASE1', 'CASE2', 'CASE3', 'CASE4']

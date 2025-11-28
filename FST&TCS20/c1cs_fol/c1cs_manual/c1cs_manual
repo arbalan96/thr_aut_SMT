@@ -1,0 +1,134 @@
+skel Proc {
+local pc;
+shared nsnt0, nsnt1, nsnt0CF, nsnt1CF, nsnt01, nsnt01CF, nfaulty;
+parameters N, T, F;
+assumptions (1) {
+N > 3 * T;
+T >= F;
+T >= 1;
+}
+
+locations (9) {
+loc0: [0];
+loc1: [1];
+locS0: [2];
+locS1: [3];
+locD0: [4];
+locD1: [5];
+locU0: [6];
+locU1: [7];
+locCR: [8];
+}
+
+inits (8) {
+(loc0 + loc1) == N;
+locS0 == 0;
+locS1 == 0;
+locD0 == 0;
+locD1 == 0;
+locU0 == 0;
+locU1 == 0;
+locCR == 0;
+nsnt0 == 0;
+nsnt1 == 0;
+nsnt01 == 0;
+nsnt0CF == 0;
+nsnt1CF == 0;
+nsnt01CF == 0;
+nfaulty == 0;
+}
+
+rules (0) {
+0: loc0 -> locS0
+when (true)
+do { nsnt0CF' == nsnt0CF + 1; nsnt1CF' == nsnt1CF; nsnt0' == nsnt0 + 1; nsnt1' == nsnt1; nsnt01CF' == nsnt01CF + 1; nsnt01' == nsnt01 + 1; nfaulty' == nfaulty; };
+1: loc0 -> locCR
+when (nfaulty < F)
+do { nsnt0CF' == nsnt0CF + 1; nsnt1CF' == nsnt1CF; nsnt0' == nsnt0; nsnt1' == nsnt1; nsnt01CF' == nsnt01CF + 1; nsnt01' == nsnt01; nfaulty' == nfaulty + 1; };
+2: loc1 -> locS1
+when (true)
+do { nsnt0CF' == nsnt0CF; nsnt1CF' == nsnt1CF + 1; nsnt0' == nsnt0; nsnt1' == nsnt1 + 1; nsnt01CF' == nsnt01CF + 1; nsnt01' == nsnt01 + 1; nfaulty' == nfaulty; };
+3: loc1 -> locCR
+when (nfaulty < F)
+do { nsnt0CF' == nsnt0CF; nsnt1CF' == nsnt1CF + 1; nsnt0' == nsnt0; nsnt1' == nsnt1; nsnt01CF' == nsnt01CF + 1; nsnt01' == nsnt01; nfaulty' == nfaulty + 1; };
+4: locS0 -> locD0
+when (nsnt0CF >= N - T)
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+5: locS1 -> locD0
+when (nsnt0CF >= N - T)
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+6: locS0 -> locD1
+when (nsnt1CF >= N - T)
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+10: locS1 -> locD1
+when (nsnt1CF >= N - T)
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+12: locS0 -> locU0
+when (nsnt01CF >= N - T && (nsnt0CF >= N - 2 * T && nsnt1CF >= 1))
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+13: locS1 -> locU0
+when (nsnt01CF >= N - T && (nsnt0CF >= N - 2 * T && nsnt1CF >= 1))
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+14: locS0 -> locU1
+when (nsnt01CF >= N - T && (nsnt1CF >= N - 2 * T && nsnt0CF >= 1))
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+15: locS1 -> locU1
+when (nsnt01CF >= N - T && (nsnt1CF >= N - 2 * T && nsnt0CF >= 1))
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+16: locS0 -> locU0
+when (nsnt01CF >= N - T && (nsnt0 < N - 2 * T && nsnt1 < N - 2 * T))
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+17: locS1 -> locU1
+when (nsnt01CF >= N - T && (nsnt0 < N - 2 * T && nsnt1 < N - 2 * T))
+do { unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01, nfaulty); };
+18: loc0 -> locCR
+when (nfaulty < F)
+do {  nfaulty' == nfaulty + 1; unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+19: loc1 -> locCR
+when (nfaulty < F)
+do {  nfaulty' == nfaulty + 1; unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+20: locS0 -> locCR
+when (nfaulty < F)
+do {  nfaulty' == nfaulty + 1; unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+21: locS1 -> locCR
+when (nfaulty < F)
+do {  nfaulty' == nfaulty + 1; unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+22: locD0 -> locCR
+when (nfaulty < F)
+do {  nfaulty' == nfaulty + 1; unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+23: locD1 -> locCR
+when (nfaulty < F)
+do {  nfaulty' == nfaulty + 1; unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+24: locU0 -> locCR
+when (nfaulty < F)
+do {  nfaulty' == nfaulty + 1; unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+25: locU1 -> locCR
+when (nfaulty < F)
+do {  nfaulty' == nfaulty + 1; unchanged(nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+26: loc0 -> loc0
+when (true)
+do { unchanged(nfaulty, nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+27: loc1 -> loc1
+when (true)
+do { unchanged(nfaulty, nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+28: locS0 -> locS0
+when (true)
+do { unchanged(nfaulty, nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+29: locS1 -> locS1
+when (true)
+do { unchanged(nfaulty, nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+30: locD0 -> locD0
+when (true)
+do { unchanged(nfaulty, nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+31: locD1 -> locD1
+when (true)
+do { unchanged(nfaulty, nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+32: locU0 -> locU0
+when (true)
+do { unchanged(nfaulty, nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+33: locU1 -> locU1
+when (true)
+do { unchanged(nfaulty, nsnt0CF, nsnt0, nsnt1CF, nsnt1, nsnt01CF, nsnt01); };
+}
+
+
